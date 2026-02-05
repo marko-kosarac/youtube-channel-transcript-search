@@ -1,66 +1,58 @@
+import time
+import random
 from pathlib import Path
 
 from fetch_videos import fetch_video_ids
-from download_captions import try_download_transcript_via_ytdlp, polite_pause
-from download_audio import download_audio_if_needed
+from get_transcript import try_download_transcript
+from download_audio import download_audio
 
-
-LIMIT = 30  # test
-
+LIMIT = 5  # None kad pustiš full run
 
 def transcript_exists(video_id: str) -> bool:
     repo_root = Path(__file__).resolve().parents[1]
     return (repo_root / "transcripts" / f"{video_id}.json").exists()
 
-
 def audio_exists(video_id: str) -> bool:
     repo_root = Path(__file__).resolve().parents[1]
     return (repo_root / "audio" / f"{video_id}.mp3").exists()
 
-
 def main():
-    video_ids = fetch_video_ids()
-    print(f"Found {len(video_ids)} video IDs.")
-    video_ids = video_ids[:LIMIT]
-    print(f"Processing first {len(video_ids)} videos for testing.\n")
+    ids = fetch_video_ids()
+    print(f"Found {len(ids)} video IDs.")
 
-    skipped_transcript = 0
-    downloaded_transcript = 0
-    skipped_audio = 0
-    downloaded_audio = 0
+    if LIMIT is not None:
+        ids = ids[:LIMIT]
+        print(f"Processing first {len(ids)} videos (LIMIT={LIMIT}).\n")
 
-    for vid in video_ids:
-        # 1) Ako već imamo transkript fajl -> preskoči sve
+    for idx, vid in enumerate(ids, start=1):
+        time.sleep(7 + random.random() * 5)  # 7–12s
+
         if transcript_exists(vid):
-            skipped_transcript += 1
-            polite_pause()
+            print(f"[{idx}] {vid}: transcript cached")
             continue
 
-        # 2) Pokušaj transkript preko yt-dlp (original govor)
-        ok = try_download_transcript_via_ytdlp(vid, debug=True)
+        ok, status, err = try_download_transcript(vid)
+        print(f"[{idx}] {vid}: transcript -> {status}")
+
+        if status == "ip_blocked":
+            print("\n⛔ IP blocked detected. Prekidam da ne pogoršam ban.")
+            print("   Savjet: promijeni IP (restart router / reconnect) ili koristi mobilni hotspot.\n")
+            break
+
         if ok:
-            downloaded_transcript += 1
-            polite_pause()
             continue
 
-        # 3) Nema transkripta -> skini audio, ali samo ako već ne postoji
         if audio_exists(vid):
-            skipped_audio += 1
-            polite_pause()
+            print(f"[{idx}] {vid}: audio cached")
             continue
 
-        audio_ok, err = download_audio_if_needed(vid)
-        if audio_ok:
-            downloaded_audio += 1
-        else:
-            print(f"❌ Audio download failed for {vid}: {err}")
+        time.sleep(4 + random.random() * 4)  # 4–8s
 
-        polite_pause()
+        audio_ok, audio_err = download_audio(vid)
+        if not audio_ok:
+            print(f"❌ Audio failed for {vid}: {audio_err}")
 
-    print("\n✅ Pipeline finished.")
-    print(f"Transcripts: downloaded={downloaded_transcript}, skipped(existing)={skipped_transcript}")
-    print(f"Audio: downloaded={downloaded_audio}, skipped(existing)={skipped_audio}")
-
+    print("\n✅ Done.")
 
 if __name__ == "__main__":
     main()

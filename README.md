@@ -6,8 +6,8 @@ Instrukcije:
 git clone <repo>
 cd youtube-channel-transcript-search
 
-python -m venv .venv\n
+python -m venv .venv
 .venv\Scripts\activate
 
-pip install -r requirements.txt\n
+pip install -r requirements.txt
 python ingestion/pipeline.py

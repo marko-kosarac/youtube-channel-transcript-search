@@ -7,7 +7,7 @@ from video_transcription import try_download_transcript
 from audio_download import download_audio
 from whisper_transcription import transcribe_audio
 
-LIMIT = 5  # None kad pustiš full run
+LIMIT = 5 
 WHISPER_MODEL = "base"
 
 def repo_root() -> Path:

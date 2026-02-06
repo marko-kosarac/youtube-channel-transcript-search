@@ -66,7 +66,7 @@ def try_download_transcript(video_id: str) -> Tuple[bool, Status, str | None]:
                 print(f"⛔ IP BLOCKED for {video_id}. Stop run and try later / change IP.")
                 return False, "ip_blocked", msg
 
-            print(f"⚠️ Transcript failed: {type(e).__name__}: {msg}")
+            print(f"⚠️ Transcript failed: {type(e).__name__}")
             return False, "error", msg
 
     print("❌ Transcript retries exceeded.")

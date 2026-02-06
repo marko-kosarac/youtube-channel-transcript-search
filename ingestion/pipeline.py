@@ -2,19 +2,28 @@ import time
 import random
 from pathlib import Path
 
-from fetch_videos import fetch_video_ids
-from get_transcript import try_download_transcript
-from download_audio import download_audio
+from video_fetch import fetch_video_ids
+from video_transcription import try_download_transcript
+from audio_download import download_audio
+from whisper_transcription import transcribe_audio
 
 LIMIT = 5  # None kad pustiš full run
+WHISPER_MODEL = "base"
 
-def transcript_exists(video_id: str) -> bool:
-    repo_root = Path(__file__).resolve().parents[1]
-    return (repo_root / "transcripts" / f"{video_id}.json").exists()
+def repo_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+def yt_transcript_exists(video_id: str) -> bool:
+    return (repo_root() / "transcripts" / f"{video_id}.json").exists()
+
+def whisper_transcript_exists(video_id: str) -> bool:
+    return (repo_root() / "transcripts_whisper" / f"{video_id}.json").exists()
 
 def audio_exists(video_id: str) -> bool:
-    repo_root = Path(__file__).resolve().parents[1]
-    return (repo_root / "audio" / f"{video_id}.mp3").exists()
+    return (repo_root() / "audio" / f"{video_id}.mp3").exists()
+
+def jitter_sleep(a: float, b: float):
+    time.sleep(a + random.random() * (b - a))
 
 def main():
     ids = fetch_video_ids()
@@ -25,32 +34,38 @@ def main():
         print(f"Processing first {len(ids)} videos (LIMIT={LIMIT}).\n")
 
     for idx, vid in enumerate(ids, start=1):
-        time.sleep(7 + random.random() * 5)  # 7–12s
-
-        if transcript_exists(vid):
-            print(f"[{idx}] {vid}: transcript cached")
+        if yt_transcript_exists(vid):
+            print(f"[{idx}] {vid}: YouTube transcript cached")
             continue
+        if whisper_transcript_exists(vid):
+            print(f"[{idx}] {vid}: Whisper transcript cached")
+            continue
+
+        jitter_sleep(7, 12)
 
         ok, status, err = try_download_transcript(vid)
         print(f"[{idx}] {vid}: transcript -> {status}")
 
         if status == "ip_blocked":
             print("\n⛔ IP blocked detected. Prekidam da ne pogoršam ban.")
-            print("   Savjet: promijeni IP (restart router / reconnect) ili koristi mobilni hotspot.\n")
             break
 
         if ok:
             continue
 
-        if audio_exists(vid):
+        if not audio_exists(vid):
+            jitter_sleep(4, 8)
+            audio_ok, audio_err = download_audio(vid)
+            if not audio_ok:
+                print(f"❌ Audio failed for {vid}: {audio_err}")
+                continue
+        else:
             print(f"[{idx}] {vid}: audio cached")
-            continue
 
-        time.sleep(4 + random.random() * 4)  # 4–8s
-
-        audio_ok, audio_err = download_audio(vid)
-        if not audio_ok:
-            print(f"❌ Audio failed for {vid}: {audio_err}")
+        print(f"[{idx}] {vid}: running Whisper ({WHISPER_MODEL})...")
+        whisper_ok = transcribe_audio(vid, model_name=WHISPER_MODEL)
+        if not whisper_ok:
+            print(f"❌ Whisper failed for {vid}")
 
     print("\n✅ Done.")
 

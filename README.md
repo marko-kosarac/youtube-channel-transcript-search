@@ -1,2 +1,13 @@
 # youtube-channel-transcript-search
-Open-source tool for searching spoken words inside videos of a YouTube channel.
+Ovaj projekat omogućava pretragu YouTube kanala po ključnoj riječi na osnovu sadržaja izgovorenog u videima.
+
+Instrukcije:
+
+git clone <repo>
+cd youtube-channel-transcript-search
+
+python -m venv .venv
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+python ingestion/pipeline.py

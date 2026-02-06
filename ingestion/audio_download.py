@@ -39,3 +39,14 @@ def download_audio(video_id: str) -> tuple[bool, str | None]:
 
     print(f"🎧 Audio saved: {out_path.name}")
     return True, None
+
+if __name__ == "__main__":
+    user_input = input("Unesi YouTube video ID: ").strip()
+
+    ok, err = download_audio(user_input)
+
+    if ok:
+        print("\n✅ DOWNLOAD USPJESAN")
+    else:
+        print("\n❌ DOWNLOAD FAIL:")
+        print(err)

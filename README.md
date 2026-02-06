@@ -8,4 +8,4 @@ Instrukcije:
 3. python -m venv .venv
 4. .venv\Scripts\activate
 5. pip install -r requirements.txt
-6. python ingestion/pipeline.py
+6. python src/pipeline.py

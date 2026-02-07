@@ -9,5 +9,5 @@ Instrukcije:
 5. pip install -r requirements.txt
 
 Pokretanje:
-7. python src/ingestion/pipeline.py
+python src/ingestion/pipeline.py
 

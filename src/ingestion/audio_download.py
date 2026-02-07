@@ -4,7 +4,7 @@ from pathlib import Path
 
 def download_audio(video_id: str) -> tuple[bool, str | None]:
     repo_root = Path(__file__).resolve().parents[1]
-    out_dir = repo_root / "audio"
+    out_dir = repo_root / "data" / "audio"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{video_id}.mp3"
 

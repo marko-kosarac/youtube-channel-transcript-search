@@ -21,7 +21,7 @@ Status = Literal["saved", "cached", "no_transcript", "rate_limited", "ip_blocked
 
 def try_download_transcript(video_id: str) -> Tuple[bool, Status, str | None]:
     repo_root = Path(__file__).resolve().parents[1]
-    out_dir = repo_root / "transcripts"
+    out_dir = repo_root / "data" / "transcripts"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{video_id}.json"
 

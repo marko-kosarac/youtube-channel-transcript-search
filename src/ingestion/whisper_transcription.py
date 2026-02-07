@@ -45,8 +45,8 @@ def transcribe_audio(
 
     repo_root = _repo_root()
 
-    audio_mp3 = repo_root / "audio" / f"{video_id}.mp3"
-    out_dir = _ensure_dir(repo_root / "transcripts")
+    audio_mp3 = repo_root / "data" / "audio" / f"{video_id}.mp3"
+    out_dir = _ensure_dir(repo_root / "data" / "transcripts")
     out_path = out_dir / f"{video_id}.json"
 
     if out_path.exists():

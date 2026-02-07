@@ -14,13 +14,13 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 def yt_transcript_exists(video_id: str) -> bool:
-    return (repo_root() / "transcripts" / f"{video_id}.json").exists()
+    return (repo_root() / "data" / "transcripts" / f"{video_id}.json").exists()
 
 def whisper_transcript_exists(video_id: str) -> bool:
-    return (repo_root() / "transcripts_whisper" / f"{video_id}.json").exists()
+    return (repo_root() / "data" / "transcripts" / f"{video_id}.json").exists()
 
 def audio_exists(video_id: str) -> bool:
-    return (repo_root() / "audio" / f"{video_id}.mp3").exists()
+    return (repo_root() / "data" / "audio" / f"{video_id}.mp3").exists()
 
 def jitter_sleep(a: float, b: float):
     time.sleep(a + random.random() * (b - a))

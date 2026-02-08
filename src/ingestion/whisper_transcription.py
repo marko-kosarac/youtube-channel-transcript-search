@@ -1,40 +1,51 @@
+# whisper_transcription.py
 from __future__ import annotations
 
 import json
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import whisper
 
+def _project_root() -> Path:
 
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
-def _ensure_dir(p: Path) -> Path:
+def _data_dir() -> Path:
+    return _project_root() / "data"
+
+
+def _audio_dir() -> Path:
+    p = _data_dir() / "audio"
     p.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def _transcripts_dir() -> Path:
+    p = _data_dir() / "transcripts"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+def _write_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def _run_ffmpeg_to_wav_16k_mono(src: Path, dst: Path) -> None:
     cmd = [
         "ffmpeg", "-y",
         "-i", str(src),
-        "-ac", "1",
-        "-ar", "16000",
+        "-ac", "1",       
+        "-ar", "16000",   
         str(dst),
     ]
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
-        raise RuntimeError((r.stderr or "").strip() or "ffmpeg conversion failed")
-
-
-def _write_json(path: Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
+        err = (r.stderr or "").strip() or "ffmpeg conversion failed"
+        raise RuntimeError(err)
 
 def transcribe_audio(
     video_id: str,
@@ -42,12 +53,8 @@ def transcribe_audio(
     language: str = "sr",
     use_word_timestamps: bool = True,
 ) -> bool:
-
-    repo_root = _repo_root()
-
-    audio_mp3 = repo_root / "data" / "audio" / f"{video_id}.mp3"
-    out_dir = _ensure_dir(repo_root / "data" / "transcripts")
-    out_path = out_dir / f"{video_id}.json"
+    audio_mp3 = _audio_dir() / f"{video_id}.mp3"
+    out_path = _transcripts_dir() / f"{video_id}.json"
 
     if out_path.exists():
         print(f"✅ Cached transcript: {out_path.name}")
@@ -59,8 +66,8 @@ def transcribe_audio(
 
     print(f"🎛️  Preparing audio: {audio_mp3.name}")
 
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp:
-        tmp_wav = Path(tmp.name)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_wav = Path(tmpdir) / f"{video_id}.wav"
 
         try:
             _run_ffmpeg_to_wav_16k_mono(audio_mp3, tmp_wav)
@@ -69,7 +76,12 @@ def transcribe_audio(
             return False
 
         print(f"🧠 Whisper ({model_name}, lang={language}) -> {audio_mp3.name}")
-        model = whisper.load_model(model_name)
+
+        try:
+            model = whisper.load_model(model_name)
+        except Exception as e:
+            print(f"❌ Whisper model load failed: {type(e).__name__}: {e}")
+            return False
 
         transcribe_kwargs: Dict[str, Any] = dict(
             fp16=False,
@@ -93,7 +105,11 @@ def transcribe_audio(
         except TypeError as e:
             if "word_timestamps" in str(e):
                 transcribe_kwargs.pop("word_timestamps", None)
-                result = model.transcribe(str(tmp_wav), **transcribe_kwargs)
+                try:
+                    result = model.transcribe(str(tmp_wav), **transcribe_kwargs)
+                except Exception as e2:
+                    print(f"❌ Whisper failed: {type(e2).__name__}: {e2}")
+                    return False
             else:
                 print(f"❌ Whisper TypeError: {e}")
                 return False
@@ -113,11 +129,16 @@ def transcribe_audio(
         "segments": result.get("segments", []),
     }
 
-    _write_json(out_path, payload)
+    try:
+        _write_json(out_path, payload)
+    except Exception as e:
+        print(f"❌ Failed to write transcript JSON: {type(e).__name__}: {e}")
+        return False
+
     print(f"✅ Whisper transcript saved: {out_path.name}")
     return True
 
 
 if __name__ == "__main__":
     test_video_id = "ChgE6c7Ongs"
-    transcribe_audio(test_video_id, model_name="medium", language="sr")
+    transcribe_audio(test_video_id, model_name="base", language="sr")

@@ -20,7 +20,7 @@ def _polite_wait(min_s: float = 7.0, max_s: float = 12.0) -> None:
 Status = Literal["saved", "cached", "no_transcript", "rate_limited", "ip_blocked", "error"]
 
 def try_download_transcript(video_id: str) -> Tuple[bool, Status, str | None]:
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     out_dir = repo_root / "data" / "transcripts"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{video_id}.json"

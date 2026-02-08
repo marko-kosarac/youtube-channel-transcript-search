@@ -3,6 +3,7 @@ import sys
 
 CHANNEL_URL = "https://www.youtube.com/@Cile/videos"
 # CHANNEL_URL = "https://www.youtube.com/@dvaipopsihijatra/videos"
+# CHANNEL_URL = "https://www.youtube.com/@TragBiljke/videos"
 
 def fetch_video_ids(channel_url: str = CHANNEL_URL) -> list[str]:
     cmd = [

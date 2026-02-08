@@ -8,10 +8,10 @@ from audio_download import download_audio
 from whisper_transcription import transcribe_audio
 
 LIMIT = 5 
-WHISPER_MODEL = "base"
+WHISPER_MODEL = "medium"
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 def yt_transcript_exists(video_id: str) -> bool:
     return (repo_root() / "data" / "transcripts" / f"{video_id}.json").exists()

@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 def download_audio(video_id: str) -> tuple[bool, str | None]:
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     out_dir = repo_root / "data" / "audio"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{video_id}.mp3"
@@ -17,12 +17,16 @@ def download_audio(video_id: str) -> tuple[bool, str | None]:
 
         "--sleep-interval", "1",
         "--max-sleep-interval", "3",
+        "--sleep-interval", "1",
+        "--max-sleep-interval", "3",
 
         "--retries", "5",
         "--fragment-retries", "5",
         "--retry-sleep", "fragment:5",
 
         "--limit-rate", "750K",
+        "--cookies", str(repo_root / "data" / "cookies" / "cookies.txt"),
+
 
         "-x", "--audio-format", "mp3",
         "-o", str(out_dir / "%(id)s.%(ext)s"),

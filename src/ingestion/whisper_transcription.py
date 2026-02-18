@@ -57,14 +57,14 @@ def transcribe_audio(
     out_path = _transcripts_dir() / f"{video_id}.json"
 
     if out_path.exists():
-        print(f"✅ Cached transcript: {out_path.name}")
+        print(f"Cached transcript: {out_path.name}")
         return True
 
     if not audio_mp3.exists():
-        print(f"❌ Missing audio: {audio_mp3}")
+        print(f"Missing audio: {audio_mp3}")
         return False
 
-    print(f"🎛️  Preparing audio: {audio_mp3.name}")
+    print(f"Preparing audio: {audio_mp3.name}")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_wav = Path(tmpdir) / f"{video_id}.wav"
@@ -72,15 +72,15 @@ def transcribe_audio(
         try:
             _run_ffmpeg_to_wav_16k_mono(audio_mp3, tmp_wav)
         except Exception as e:
-            print(f"❌ ffmpeg failed: {e}")
+            print(f"ffmpeg failed: {e}")
             return False
 
-        print(f"🧠 Whisper ({model_name}, lang={language}) -> {audio_mp3.name}")
+        print(f"Whisper ({model_name}, lang={language}) -> {audio_mp3.name}")
 
         try:
             model = whisper.load_model(model_name)
         except Exception as e:
-            print(f"❌ Whisper model load failed: {type(e).__name__}: {e}")
+            print(f"Whisper model load failed: {type(e).__name__}: {e}")
             return False
 
         transcribe_kwargs: Dict[str, Any] = dict(
@@ -108,13 +108,13 @@ def transcribe_audio(
                 try:
                     result = model.transcribe(str(tmp_wav), **transcribe_kwargs)
                 except Exception as e2:
-                    print(f"❌ Whisper failed: {type(e2).__name__}: {e2}")
+                    print(f"Whisper failed: {type(e2).__name__}: {e2}")
                     return False
             else:
-                print(f"❌ Whisper TypeError: {e}")
+                print(f"Whisper TypeError: {e}")
                 return False
         except Exception as e:
-            print(f"❌ Whisper failed: {type(e).__name__}: {e}")
+            print(f"Whisper failed: {type(e).__name__}: {e}")
             return False
 
     payload = {
@@ -132,10 +132,10 @@ def transcribe_audio(
     try:
         _write_json(out_path, payload)
     except Exception as e:
-        print(f"❌ Failed to write transcript JSON: {type(e).__name__}: {e}")
+        print(f"Failed to write transcript JSON: {type(e).__name__}: {e}")
         return False
 
-    print(f"✅ Whisper transcript saved: {out_path.name}")
+    print(f"Whisper transcript saved: {out_path.name}")
     return True
 
 

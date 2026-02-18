@@ -41,7 +41,7 @@ def download_audio(video_id: str) -> tuple[bool, str | None]:
     if not out_path.exists():
         return False, "Audio download finished but mp3 file not found."
 
-    print(f"🎧 Audio saved: {out_path.name}")
+    print(f"Audio saved: {out_path.name}")
     return True, None
 
 if __name__ == "__main__":
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     ok, err = download_audio(user_input)
 
     if ok:
-        print("\n✅ DOWNLOAD USPJESAN")
+        print("\nDOWNLOAD USPJESAN")
     else:
-        print("\n❌ DOWNLOAD FAIL:")
+        print("\nDOWNLOAD FAIL:")
         print(err)

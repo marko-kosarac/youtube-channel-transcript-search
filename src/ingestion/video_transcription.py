@@ -44,7 +44,7 @@ def try_download_transcript(video_id: str) -> Tuple[bool, Status, str | None]:
                 encoding="utf-8"
             )
 
-            print(f"✅ Transcript saved: {out_path.name}")
+            print(f"Transcript saved: {out_path.name}")
             return True, "saved", None
 
         except Exception as e:
@@ -52,22 +52,33 @@ def try_download_transcript(video_id: str) -> Tuple[bool, Status, str | None]:
             msg_l = msg.lower()
 
             if "notranscriptfound" in msg_l or "no transcript" in msg_l:
-                print(f"ℹ️ No transcript for {video_id}")
+                print(f"No transcript for {video_id}")
                 return False, "no_transcript", msg
 
             if "429" in msg_l or "too many requests" in msg_l:
                 sleep_s = delay + random.uniform(0, 5)
-                print(f"⏳ 429 rate limit for {video_id}. Sleep {sleep_s:.1f}s (attempt {attempt}/5)")
+                print(f"429 rate limit for {video_id}. Sleep {sleep_s:.1f}s (attempt {attempt}/5)")
                 time.sleep(sleep_s)
                 delay = min(delay * 2, 20 * 60)
                 continue
 
             if "ipblocked" in msg_l or "requestblocked" in msg_l or "blocking requests from your ip" in msg_l:
-                print(f"⛔ IP BLOCKED for {video_id}. Stop run and try later / change IP.")
+                print(f"IP BLOCKED for {video_id}. Stop run and try later / change IP.")
                 return False, "ip_blocked", msg
 
-            print(f"⚠️ Transcript failed: {type(e).__name__}")
+            print(f"Transcript failed: {type(e).__name__}")
             return False, "error", msg
 
-    print("❌ Transcript retries exceeded.")
+    print("Transcript retries exceeded.")
     return False, "rate_limited", "retries exceeded"
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 2:
+        exit(1)
+
+    vid = sys.argv[1].strip()
+    try_download_transcript(vid)
+
+

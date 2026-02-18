@@ -47,7 +47,7 @@ def main():
         print(f"[{idx}] {vid}: transcript -> {status}")
 
         if status == "ip_blocked":
-            print("\n⛔ IP blocked detected. Prekidam da ne pogoršam ban.")
+            print("\nIP blocked detected.")
             break
 
         if ok:
@@ -57,7 +57,7 @@ def main():
             jitter_sleep(4, 8)
             audio_ok, audio_err = download_audio(vid)
             if not audio_ok:
-                print(f"❌ Audio failed for {vid}: {audio_err}")
+                print(f"Audio failed for {vid}: {audio_err}")
                 continue
         else:
             print(f"[{idx}] {vid}: audio cached")
@@ -65,9 +65,9 @@ def main():
         print(f"[{idx}] {vid}: running Whisper ({WHISPER_MODEL})...")
         whisper_ok = transcribe_audio(vid, model_name=WHISPER_MODEL)
         if not whisper_ok:
-            print(f"❌ Whisper failed for {vid}")
+            print(f"Whisper failed for {vid}")
 
-    print("\n✅ Done.")
+    print("\nDone.")
 
 if __name__ == "__main__":
     main()

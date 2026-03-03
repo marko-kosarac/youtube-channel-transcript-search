@@ -4,7 +4,7 @@ import sys
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 
 _SR_MAP = str.maketrans({
@@ -185,10 +185,6 @@ def save_results_to_json(hits: List[Hit], query: str, mode: str):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: python src/ingestion/search_engine.py "Knjiga"')
-        sys.exit(1)
-
     query = sys.argv[1].strip()
     hits, mode = search(query)
     save_results_to_json(hits, query, mode)
@@ -199,7 +195,7 @@ def main():
 
     hits.sort(key=lambda h: (h.video_id, h.t))
 
-    print(f'Found {len(hits)} match(es) for "{query}" (mode={mode}):\n')
+    print(f'Found {len(hits)} match(es) for "{query}":\n')
     for h in hits:
         print(f"- {h.video_id} @ {h.mmss} | {h.url}")
         sn = h.snippet.replace("\n", " ").strip()

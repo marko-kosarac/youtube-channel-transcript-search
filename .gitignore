@@ -27,6 +27,7 @@ wheels/
 transcripts/
 audio/
 data/
+search_results/
 share/python-wheels/
 *.egg-info/
 .installed.cfg

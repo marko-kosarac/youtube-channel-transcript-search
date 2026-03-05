@@ -1,11 +1,7 @@
 import subprocess
 import sys
 
-# CHANNEL_URL = "https://www.youtube.com/@Cile/videos"
-# CHANNEL_URL = "https://www.youtube.com/@dvaipopsihijatra/videos"
-CHANNEL_URL = "https://www.youtube.com/@TragBiljke/videos"
-
-def fetch_video_ids(channel_url: str = CHANNEL_URL) -> list[str]:
+def fetch_video_ids(channel_url: str) -> list[str]:
     cmd = [
         sys.executable, "-m", "yt_dlp",
         "--flat-playlist",
@@ -24,6 +20,6 @@ def fetch_video_ids(channel_url: str = CHANNEL_URL) -> list[str]:
 
 
 if __name__ == "__main__":
-    ids = fetch_video_ids()
+    ids = fetch_video_ids(sys.argv[1])
     print(f"Found {len(ids)} video IDs.")
     print(ids[:10])

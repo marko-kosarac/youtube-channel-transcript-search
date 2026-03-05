@@ -1,5 +1,6 @@
 import time
 import random
+import sys
 from pathlib import Path
 
 from video_fetch import fetch_video_ids
@@ -26,8 +27,9 @@ def jitter_sleep(a: float, b: float):
     time.sleep(a + random.random() * (b - a))
 
 def main():
-    ids = fetch_video_ids()
-    print(f"Found {len(ids)} video IDs.")
+    channel_url = sys.argv[1].strip()
+
+    ids = fetch_video_ids(channel_url)
 
     if LIMIT is not None:
         ids = ids[:LIMIT]

@@ -1,0 +1,18 @@
+<h1>YouTube Transcript Search</h1>
+
+<div style="margin-bottom: 16px;">
+  <label for="channel">YouTube kanal:</label>
+  <br />
+  <input
+    id="channel"
+    type="text"
+    [(ngModel)]="channel"
+    placeholder="https://www.youtube.com/@TragBiljke/videos"
+    style="width: 500px; padding: 8px; margin-top: 8px;"
+  />
+</div>
+
+<button (click)="prepareChannel()">Pripremi kanal</button>
+
+<p>{{ message }}</p>
+<p *ngIf="jobId">Job ID: {{ jobId }}</p>

@@ -4,13 +4,12 @@ from pydantic import BaseModel
 
 import subprocess
 import sys
+import threading
 from pathlib import Path
-
-from backend.jobs import JOBS, new_job, update_job, run_in_thread
+import json
 
 app = FastAPI(title="YT Transcript Search Backend")
 
-# Angular dev server
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
@@ -20,82 +19,103 @@ app.add_middleware(
 )
 
 
-# -------------------------
-# Health
-# -------------------------
+def project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def status_file() -> Path:
+    path = project_root() / "data" / "status" / "current_status.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def log_file() -> Path:
+    path = project_root() / "data" / "status" / "pipeline.log"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def write_status(status: str, message: str, progress: int = 0, error: str | None = None):
+    payload = {
+        "status": status,
+        "message": message,
+        "progress": progress,
+        "error": error,
+    }
+    status_file().write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+
+@app.get("/")
+def root():
+    return {"message": "Backend running"}
+
+
 @app.get("/health")
 def health():
     return {"ok": True, "message": "Backend is running"}
 
 
-# -------------------------
-# Prepare (run pipeline)
-# -------------------------
 class PrepareRequest(BaseModel):
     channel: str
 
 
 @app.post("/prepare")
 def prepare(req: PrepareRequest):
-    job_id = new_job(message=f'Preparing channel: {req.channel}')
-    update_job(job_id, status="running", progress=1)
+    write_status("running", "Pokretanje pipeline-a...", 1)
 
     def worker():
         try:
-            update_job(job_id, message="Starting pipeline...", progress=5)
-
-            # project root = parent of /backend
-            root = Path(__file__).resolve().parents[1]
+            root = project_root()
             pipeline_path = root / "src" / "ingestion" / "pipeline.py"
 
-            # run: python src/ingestion/pipeline.py "<channel_url>"
-            proc = subprocess.run(
+            # log reset
+            log_file().write_text("", encoding="utf-8")
+
+            proc = subprocess.Popen(
                 [sys.executable, str(pipeline_path), req.channel],
-                capture_output=True,
-                text=True,
+                cwd=str(root),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+
+            stdout, stderr = proc.communicate()
+
+            # upiši log fajl
+            log_file().write_text(
+                f"STDOUT:\n{stdout}\n\nSTDERR:\n{stderr}",
+                encoding="utf-8"
             )
 
             if proc.returncode != 0:
-                # show stderr (and stdout if stderr empty)
-                err = (proc.stderr or "").strip() or (proc.stdout or "").strip()
-                update_job(
-                    job_id,
-                    status="error",
-                    message="Pipeline failed",
-                    error=err,
-                    progress=100,
-                )
+                err = stderr.strip() or stdout.strip() or "Pipeline failed"
+                write_status("error", "Pipeline nije uspio.", 100, err)
                 return
 
-            update_job(
-                job_id,
-                status="done",
-                message="Channel processing finished",
-                progress=100,
-            )
+            # Ako pipeline nije sam upisao done, backend neka ga zatvori
+            current = json.loads(status_file().read_text(encoding="utf-8"))
+            if current.get("status") == "running":
+                write_status("done", "Obrada kanala završena.", 100)
 
         except Exception as e:
-            update_job(
-                job_id,
-                status="error",
-                message="Exception during pipeline",
-                error=str(e),
-                progress=100,
-            )
+            write_status("error", "Greška pri pokretanju pipeline-a.", 100, str(e))
 
-    run_in_thread(worker)
-    return {"job_id": job_id}
+    threading.Thread(target=worker, daemon=True).start()
+    return {"ok": True, "message": "Priprema kanala je pokrenuta"}
 
 
-@app.get("/status/{job_id}")
-def status(job_id: str):
-    job = JOBS.get(job_id)
-    if not job:
-        return {"error": "job not found"}
-    return {
-        "job_id": job_id,
-        "status": job.status,
-        "message": job.message,
-        "progress": job.progress,
-        "error": job.error,
-    }
+@app.get("/status")
+def get_status():
+    path = status_file()
+    if not path.exists():
+        return {
+            "status": "idle",
+            "message": "Nije pokrenuto",
+            "progress": 0,
+            "error": None,
+        }
+
+    return json.loads(path.read_text(encoding="utf-8"))

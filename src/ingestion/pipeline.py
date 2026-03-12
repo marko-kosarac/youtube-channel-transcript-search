@@ -25,7 +25,7 @@ def status_file() -> Path:
 
 def write_status(status: str, message: str, progress: int = 0, error: str | None = None):
     payload = {
-        "status": status,       # idle | running | done | error
+        "status": status, 
         "message": message,
         "progress": progress,
         "error": error,
@@ -34,7 +34,6 @@ def write_status(status: str, message: str, progress: int = 0, error: str | None
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
-
 
 def yt_transcript_exists(video_id: str) -> bool:
     return (repo_root() / "data" / "transcripts" / f"{video_id}.json").exists()
@@ -53,12 +52,7 @@ def jitter_sleep(a: float, b: float):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: python src/ingestion/pipeline.py "https://www.youtube.com/@TragBiljke/videos"')
-        write_status("error", "Nije proslijeđen URL kanala.", 100, "Missing channel URL")
-        raise SystemExit(1)
-
-    channel_url = sys.argv[1].strip()
+    channel_url = sys.argv[1].strip() #moram dodati da url ne bude pun url vec samo naziv kanala
 
     try:
         write_status("running", "Preuzimanje liste videa...", 5)
@@ -88,7 +82,7 @@ def main():
                 print(f"[{idx}] {vid}: Whisper transcript cached")
                 continue
 
-            write_status("running", f"Provjera transkripta za video {idx}/{total}: {vid}", base_progress)
+            write_status("running", f"Preuzimanje transkripta", base_progress)
             jitter_sleep(7, 12)
 
             ok, status, err = try_download_transcript(vid)
@@ -104,7 +98,7 @@ def main():
                 continue
 
             if not audio_exists(vid):
-                write_status("running", f"Preuzimanje audio fajla za video {idx}/{total}: {vid}", base_progress)
+                write_status("running", f"Preuzimanje audio fajlova", base_progress)
                 jitter_sleep(4, 8)
 
                 audio_ok, audio_err = download_audio(vid)

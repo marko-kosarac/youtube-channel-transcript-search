@@ -14,7 +14,7 @@ def status_file() -> Path:
 
 def write_status(status: str, message: str, progress: int = 0, error: str | None = None):
     payload = {
-        "status": status,       # idle | running | done | error
+        "status": status,     
         "message": message,
         "progress": progress,
         "error": error,

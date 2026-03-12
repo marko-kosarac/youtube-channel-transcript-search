@@ -27,6 +27,7 @@ wheels/
 transcripts/
 audio/
 data/
+status/
 search_results/
 share/python-wheels/
 *.egg-info/

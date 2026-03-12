@@ -1,26 +1,56 @@
-<h1>YouTube Transcript Search</h1>
+<div class="page">
+  <div class="card">
+    <h1>Pretraga Youtube Kanala</h1>
+    <p class="subtitle">
+      Priprema transkripte sa kanala i omogućava pretragu izgovorenih reči.
+    </p>
 
-<div>
-  <label>YouTube kanal:</label>
-  <br />
+    <div class="form-group">
+      <label for="channel">Naziv kanala</label>
+      <input
+        id="channel"
+        type="text"
+        [(ngModel)]="channel"
+        placeholder="primer: TragBiljke"
+        [disabled]="isPreparing"
+      />
+      <small>Unosi se tačan naziv kanala, bez kompletnog URL-a.</small>
+    </div>
 
-  <input
-    type="text"
-    [(ngModel)]="channel"
-    placeholder="https://www.youtube.com/@TragBiljke/videos"
-    [disabled]="isPreparing"
-  />
+    <button class="primary-btn" (click)="prepareChannel()" [disabled]="isPreparing">
+      {{ isPreparing ? 'Procesiranje...' : 'Pripremi kanal' }}
+    </button>
 
-  <br /><br />
+    <div class="status-box" *ngIf="isPreparing">
+      <div class="status-header">
+        <span class="status-title">Procesiranje kanala</span>
+        <span class="status-percent">{{ progress }}%</span>
+      </div>
 
-  <button (click)="prepareChannel()" [disabled]="isPreparing">
-    Pripremi kanal
-  </button>
-</div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress"></div>
+      </div>
 
-<br />
+      <p class="status-message">{{ message }}</p>
+    </div>
+  </div>
 
-<div>
-  <p>Status: {{ message }}</p>
-  <p>Progres: {{ progress }}%</p>
+  <div class="card" *ngIf="isReadyForSearch">
+    <h2>Pretraga</h2>
+
+    <div class="form-group">
+      <input
+        id="query"
+        type="text"
+        [(ngModel)]="query"
+        placeholder="primer: knjiga"
+      />
+      <small>Unosi se reč koja je izgovorena u određenim videima</small>
+    </div>
+
+
+    <button class="secondary-btn" (click)="searchPlaceholder()">
+      Pretraži
+    </button>
+  </div>
 </div>

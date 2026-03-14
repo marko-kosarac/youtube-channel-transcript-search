@@ -36,21 +36,47 @@
   </div>
 
   <div class="card" *ngIf="isReadyForSearch">
-    <h2>Pretraga</h2>
+    <h2>Lista videa kanala {{ channel }}</h2>
 
-    <div class="form-group">
-      <input
-        id="query"
-        type="text"
-        [(ngModel)]="query"
-        placeholder="primer: knjiga"
-      />
-      <small>Unosi se reč koja je izgovorena u određenim videima</small>
+    <div class="search-container">
+
+      <div class="search-row">
+        <input
+          id="query"
+          type="text"
+          [(ngModel)]="query"
+          placeholder="primer: knjiga"
+        />
+
+        <button class="secondary-btn" (click)="searchPlaceholder()">
+          Pretraži
+        </button>
+      </div>
+
+      <small>Unosi se željena reč izgovorena u videima</small>
+
     </div>
 
+    <div class="video-grid">
+      <a
+        class="video-card"
+        *ngFor="let video of videos"
+        [href]="video.url"
+        target="_blank"
+        rel="noopener"
+      >
+        <img
+          class="video-thumb"
+          [src]="getThumbnail(video)"
+          (error)="video.thumbnail='https://img.youtube.com/vi/' + video.video_id + '/hqdefault.jpg'; $event.target.src = video.thumbnail"
+        />
 
-    <button class="secondary-btn" (click)="searchPlaceholder()">
-      Pretraži
-    </button>
+        <div class="video-body">
+          <h3>{{ video.title }}</h3>
+          <p>{{ formatDuration(video.duration) }}</p>
+        </div>
+      </a>
+    </div>
+
   </div>
 </div>

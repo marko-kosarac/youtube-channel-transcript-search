@@ -29,6 +29,7 @@ audio/
 data/
 status/
 search_results/
+channel_videos/
 share/python-wheels/
 *.egg-info/
 .installed.cfg

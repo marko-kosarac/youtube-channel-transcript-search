@@ -4,7 +4,7 @@ import sys
 import json
 from pathlib import Path
 
-from video_fetch import fetch_video_ids
+from video_fetch import fetch_video_ids, fetch_videos_metadata
 from video_transcription import try_download_transcript
 from audio_download import download_audio
 from whisper_transcription import transcribe_audio
@@ -23,9 +23,15 @@ def status_file() -> Path:
     return path
 
 
+def videos_file() -> Path:
+    path = repo_root() / "data" / "channel_videos" / "videos.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def write_status(status: str, message: str, progress: int = 0, error: str | None = None):
     payload = {
-        "status": status, 
+        "status": status,
         "message": message,
         "progress": progress,
         "error": error,
@@ -34,6 +40,14 @@ def write_status(status: str, message: str, progress: int = 0, error: str | None
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
+
+
+def save_videos_metadata(videos: list[dict]):
+    videos_file().write_text(
+        json.dumps(videos, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
 
 def yt_transcript_exists(video_id: str) -> bool:
     return (repo_root() / "data" / "transcripts" / f"{video_id}.json").exists()
@@ -52,12 +66,19 @@ def jitter_sleep(a: float, b: float):
 
 
 def main():
-    channel_url = sys.argv[1].strip() #moram dodati da url ne bude pun url vec samo naziv kanala
+    channel_url = sys.argv[1].strip()
 
     try:
         write_status("running", "Preuzimanje liste videa...", 5)
 
+        # stara logika za obradu ostaje
         ids = fetch_video_ids(channel_url)
+
+        # NOVO: sačuvaj metapodatke za prikaz videa u UI
+        videos = fetch_videos_metadata(channel_url)
+        if LIMIT is not None:
+            videos = videos[:LIMIT]
+        save_videos_metadata(videos)
 
         if LIMIT is not None:
             ids = ids[:LIMIT]

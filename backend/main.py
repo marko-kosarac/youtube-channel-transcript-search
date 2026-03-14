@@ -119,3 +119,12 @@ def get_status():
         }
 
     return json.loads(path.read_text(encoding="utf-8"))
+
+@app.get("/videos")
+def get_videos():
+    path = project_root() / "data" / "channel_videos" / "videos.json"
+
+    if not path.exists():
+        return []
+
+    return json.loads(path.read_text(encoding="utf-8"))

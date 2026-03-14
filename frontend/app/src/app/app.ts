@@ -10,6 +10,14 @@ type StatusResponse = {
   error: string | null;
 };
 
+type VideoItem = {
+  video_id: string;
+  title: string;
+  duration: number;
+  thumbnail: string;
+  url: string;
+};
+
 @Component({
   selector: 'app-root',
   imports: [FormsModule, CommonModule],
@@ -25,6 +33,8 @@ export class App {
 
   isPreparing = false;
   isReadyForSearch = false;
+
+  videos: VideoItem[] = [];
 
   pollInterval: any;
 
@@ -54,6 +64,7 @@ export class App {
     this.progress = 0;
     this.isPreparing = true;
     this.isReadyForSearch = false;
+    this.videos = [];
     this.cdr.detectChanges();
 
     this.http.post('http://127.0.0.1:8000/prepare', {
@@ -95,6 +106,7 @@ export class App {
             this.isPreparing = false;
             this.isReadyForSearch = true;
             clearInterval(this.pollInterval);
+            this.loadVideos();
           }
 
           if (res.status === 'error') {
@@ -117,7 +129,36 @@ export class App {
     }, 500);
   }
 
+  loadVideos() {
+    this.http.get<VideoItem[]>('http://127.0.0.1:8000/videos').subscribe({
+      next: (res) => {
+        this.videos = res || [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.videos = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  formatDuration(totalSeconds: number): string {
+    const sec = Math.max(0, Number(totalSeconds || 0));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+
+    if (h > 0) {
+      return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
   searchPlaceholder() {
     console.log('Search placeholder:', this.query);
   }
+  getThumbnail(video: any): string {
+  return `https://img.youtube.com/vi/${video.video_id}/maxresdefault.jpg`;
+}
 }

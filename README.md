@@ -1,5 +1,6 @@
 # youtube-channel-transcript-search
 Ovaj projekat omogućava pretragu videa željenog YouTube kanala na osnovu izgovorenog sadržaja.
+
 Instrukcije:
 1. git clone <repo>
 2. cd youtube-channel-transcript-search

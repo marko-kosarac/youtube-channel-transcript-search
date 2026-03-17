@@ -12,6 +12,7 @@ _SR_MAP = str.maketrans({
     "Č": "c", "Ć": "c", "Š": "s", "Ž": "z", "Đ": "d",
 })
 
+
 def normalize_sr(s: str) -> str:
     s = (s or "").translate(_SR_MAP).lower()
     s = unicodedata.normalize("NFKD", s)
@@ -25,12 +26,14 @@ def format_mmss(seconds: float) -> str:
     s = sec % 60
     return f"{m:02d}:{s:02d}"
 
+
 _SUFFIXES = [
     "ovima", "evima",
     "ama", "ima",
     "om", "em",
     "u", "a", "e", "i", "o",
 ]
+
 
 def guess_sr_stem(word: str) -> str:
     w = normalize_sr(word).strip()
@@ -46,11 +49,14 @@ def guess_sr_stem(word: str) -> str:
 
     return w
 
+
 _SUFFIX_GROUP = r"(a|e|u|i|o|om|em|ama|ima|ovima|evima)?"
+
 
 def build_exact_pattern(query: str) -> re.Pattern:
     q = normalize_sr(query).strip()
     return re.compile(rf"\b{re.escape(q)}\b")
+
 
 def build_forms_pattern(query: str) -> re.Pattern:
     stem = guess_sr_stem(query)
@@ -83,6 +89,7 @@ def iter_transcript_files() -> Iterable[Path]:
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
 
 def _search_youtube_list(video_id: str, items: List[Dict[str, Any]], pattern: re.Pattern) -> List[Hit]:
     hits: List[Hit] = []
@@ -150,6 +157,7 @@ def search(query: str) -> Tuple[List[Hit], str]:
     hits = search_all(forms_pat)
     return hits, "forms"
 
+
 def save_results_to_json(hits: List[Hit], query: str, mode: str):
     root = project_root()
     results_dir = root / "data" / "search_results"
@@ -181,27 +189,14 @@ def save_results_to_json(hits: List[Hit], query: str, mode: str):
         encoding="utf-8"
     )
 
-    print(f"\n📁 Results saved to: {results_file}")
-
 
 def main():
+    if len(sys.argv) < 2:
+        return
+
     query = sys.argv[1].strip()
     hits, mode = search(query)
     save_results_to_json(hits, query, mode)
-
-    if not hits:
-        print("No matches.")
-        return
-
-    hits.sort(key=lambda h: (h.video_id, h.t))
-
-    print(f'Found {len(hits)} match(es) for "{query}":\n')
-    for h in hits:
-        print(f"- {h.video_id} @ {h.mmss} | {h.url}")
-        sn = h.snippet.replace("\n", " ").strip()
-        if len(sn) > 180:
-            sn = sn[:180] + "..."
-        print(f"  {sn}\n")
 
 
 if __name__ == "__main__":

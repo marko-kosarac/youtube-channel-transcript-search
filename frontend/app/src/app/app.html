@@ -1,20 +1,20 @@
 <div class="page">
   <div class="card">
-    <h1>Pretraga Youtube Kanala</h1>
+    <h1>Pretraga YouTube kanala</h1>
     <p class="subtitle">
-      Priprema transkripte sa kanala i omogućava pretragu izgovorenih reči.
+      Prikazuje videe sa željenog kanala uz mogućnost pretrage
     </p>
 
     <div class="form-group">
-      <label for="channel">Naziv kanala</label>
+      <label for="channel">Naziv kanala ili URL</label>
       <input
         id="channel"
         type="text"
         [(ngModel)]="channel"
-        placeholder="primer: TragBiljke"
+        placeholder="primer: TragBiljke ili @TragBiljke"
         [disabled]="isPreparing"
       />
-      <small>Unosi se tačan naziv kanala, bez kompletnog URL-a.</small>
+      <small>Možeš uneti naziv kanala, @handle ili puni URL.</small>
     </div>
 
     <button class="primary-btn" (click)="prepareChannel()" [disabled]="isPreparing">
@@ -36,7 +36,7 @@
   </div>
 
   <div class="card" *ngIf="isReadyForSearch">
-    <h2>Lista videa kanala {{ channel }}</h2>
+    <h2>Pretraga videa sa kanala {{displayChannelName }}</h2>
 
     <div class="search-container">
 
@@ -45,22 +45,48 @@
           id="query"
           type="text"
           [(ngModel)]="query"
-          placeholder="primer: knjiga"
+          placeholder="Pretražuje se pojam izgovoren u videima"
+          [disabled]="isSearching"
         />
-
-        <button class="secondary-btn" (click)="searchPlaceholder()">
-          Pretraži
+        <button class="secondary-btn" (click)="runSearch()" [disabled]="isSearching">
+          {{ isSearching ? 'Tražim...' : 'Pretraži' }}
         </button>
       </div>
-
-      <small>Unosi se željena reč izgovorena u videima</small>
-
+      <small *ngIf="searchMessage">{{ searchMessage }}</small>
     </div>
 
-    <div class="video-grid">
+    <div class="results-list" *ngIf="searchResults().length > 0">
+      <a
+        class="search-result-card"
+        *ngFor="let result of searchResults(); trackBy: trackByResult"
+        [href]="result.url"
+        target="_blank"
+        rel="noopener"
+      >
+        <img
+          class="search-result-thumb"
+          [src]="getResultThumbnail(result.video_id)"
+          [alt]="getVideoTitle(result.video_id)"
+          (error)="onResultThumbnailError($event, result.video_id)"
+        />
+
+        <div class="search-result-body">
+          <h3>{{ getVideoTitle(result.video_id) }}</h3>
+          <p class="search-result-time">
+            Trenutak pojave: <strong>{{ result.timestamp }}</strong>
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="videosVisible">
+    <h2>Svi videi sa kanala {{displayChannelName }}</h2>
+
+    <div class="video-grid" *ngIf="videos().length > 0">
       <a
         class="video-card"
-        *ngFor="let video of videos"
+        *ngFor="let video of videos(); trackBy: trackByVideoId"
         [href]="video.url"
         target="_blank"
         rel="noopener"
@@ -68,7 +94,8 @@
         <img
           class="video-thumb"
           [src]="getThumbnail(video)"
-          (error)="video.thumbnail='https://img.youtube.com/vi/' + video.video_id + '/hqdefault.jpg'; $event.target.src = video.thumbnail"
+          [alt]="video.title"
+          (error)="onThumbnailError($event, video)"
         />
 
         <div class="video-body">
@@ -78,5 +105,8 @@
       </a>
     </div>
 
+    <div class="empty-state" *ngIf="videos().length === 0">
+      Videi su prepoznati, ali još nisu učitani za prikaz.
+    </div>
   </div>
 </div>

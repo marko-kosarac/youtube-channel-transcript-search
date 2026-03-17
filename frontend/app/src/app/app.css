@@ -7,7 +7,7 @@
 }
 
 .page {
-  max-width: 760px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 48px 20px;
 }
@@ -109,6 +109,7 @@ button:disabled {
   background: #0f172a;
   color: white;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  white-space: nowrap;
 }
 
 .status-box {
@@ -157,13 +158,72 @@ button:disabled {
   color: #475569;
 }
 
-.done-box {
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-row input {
+  flex: 1;
+}
+
+.results-list {
+  display: grid;
+  gap: 16px;
   margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: #ecfdf5;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+}
+
+.search-result-card {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search-result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.search-result-thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 124px;
+  object-fit: cover;
+  display: block;
+  background: #e2e8f0;
+}
+
+.search-result-body {
+  padding: 16px 16px 16px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.search-result-body h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+.search-result-time {
+  margin: 0;
+  font-size: 15px;
+  color: #475569;
 }
 
 .video-grid {
@@ -215,21 +275,26 @@ button:disabled {
   color: #64748b;
 }
 
-.search-container{
-  margin-bottom:20px;
+.empty-state {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  background: #f8fafc;
 }
 
-.search-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
+@media (max-width: 700px) {
+  .search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.search-row input{
-  flex:1;
-  padding:10px;
-}
+  .search-result-card {
+    grid-template-columns: 1fr;
+  }
 
-.search-row button{
-  white-space:nowrap;
+  .search-result-body {
+    padding: 0 16px 16px 16px;
+  }
 }

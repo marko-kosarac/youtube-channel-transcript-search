@@ -17,11 +17,11 @@ Instrukcije:
 
 Pokretanje backend-a:
 - python -m uvicorn backend.main:app --reload --port 8000
+- radi na http://127.0.0.1:8000
 
 Pokretanje frontend-a:
 - cd frontend/app
 - npm install
 - ng serve
+- radi na http://localhost:4200
 
-Backend radi na http://127.0.0.1:8000
-Frontend radi na http://localhost:4200
